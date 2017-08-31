@@ -21,6 +21,8 @@ class Game {
     this.createMass = 20;
 
     this.spawnerMass = 20;
+
+    this.tree = new BHTree(0, 0, 1000, 1000);
   }
 
   init() {
@@ -45,11 +47,14 @@ class Game {
 
     requestAnimationFrame(this.generateFrame.bind(this));
 
-    // var particle = this.createParticle(new Vector(700, 500), 20000, new Color())
-    // particle.velocity = new Vector(0, 0);
+    //var particle = this.createParticle(new Vector(700, 500), 200000, new Color())
+    //particle.velocity = new Vector(0, 0);
 
-    // var particle = this.createParticle(new Vector(100, 500), 200, new Color())
-    // particle.velocity = new Vector(0, 4.5);
+    //var particle = this.createParticle(new Vector(600, 500), 2000, new Color())
+    //particle.velocity = new Vector(0, 1.0);
+
+    //var particle = this.createParticle(new Vector(500, 500), 2000, new Color())
+    //particle.velocity = new Vector(0, 0.7);
 
   }
 
@@ -87,14 +92,14 @@ class Game {
         var centerX = this.mousePosition.x;
         var centerY = this.mousePosition.y;
 
-        this.createParticle(new Vector(centerX, centerY), 200, new Color());
+        this.createParticle(new Vector(centerX, centerY), 2000, new Color());
         for (var i = 0; i < 1000; i++) {
           var angle = Math.random() * 2 * Math.PI;
-          var dist = Math.pow(Math.random() * 10 + 7, 2);
+          var dist = Math.pow(Math.random() * 9 + 9, 2);
           var x = centerX + dist * Math.cos(angle);
           var y = centerY + dist * Math.sin(angle);
-          var vx = -dist * Math.sin(angle) / 30;
-          var vy = dist * Math.cos(angle) / 30;
+          var vx = 0.3* dist * Math.sin(angle) / 30;
+          var vy = 0.3* -dist * Math.cos(angle) / 30;
 
           var par = this.createParticle(new Vector(x, y), 1, new Color());
           par.velocity = new Vector(vx, vy);
@@ -108,7 +113,7 @@ class Game {
 
     this.dragging = true;
 
-    if (event.which === 2 || event.touches.length > 1) {
+    if (event.which === 2 || (event.touches && event.touches.length > 1)) {
       this.panning = true;
       this.panningStart = new Vector(this.mousePosition.x, this.mousePosition.y);
       this.oldOffset = new Vector(this.offset.x, this.offset.y);
@@ -116,8 +121,8 @@ class Game {
   }
 
   onMouseMove(event) {
-    this.mousePosition.x = event.touches[0].clientX || event.clientX;
-    this.mousePosition.y = event.touches[0].clientY || event.clientY;
+    this.mousePosition.x = (event.touches && event.touches[0].clientX) || event.clientX;
+    this.mousePosition.y = (event.touches && event.touches[0].clientY) || event.clientY;
     this.fps = this.mousePosition.x;
 
     if (this.panning) {
@@ -129,7 +134,7 @@ class Game {
     }
   }
 
-  onClick(event) {  
+  onClick(event) {
     if (!this.panning) {
       var position = this.mouseDownInitial;
       var particle = this.createParticle(position, this.createMass, new Color());
@@ -146,9 +151,15 @@ class Game {
     vector = new Vector((vector.x - this.offset.x) / this.zoomFactor, (vector.y - this.offset.y) / this.zoomFactor)
     var particle = new Particle(vector, color, mass);
     particle.velocity = new Vector(0, 0);
-    this.particles.push(particle);
+    this.addParticle(particle);
 
     return particle;
+  }
+
+  addParticle(particle) {
+    this.particles.push(particle);
+    this.tree.addBody(particle);
+    console.log(this.tree);
   }
 
   generateFrame() {
@@ -236,8 +247,8 @@ class Game {
       this.context.stroke();
 
       const vX = Math.round((this.mousePosition.x - this.mouseDownInitial.x) / 100, 2);
-      const vY =  Math.round((this.mousePosition.y - this.mouseDownInitial.y) / 100);
-      this.context.fillText("vX:" + vX + ', vY:' + vY, this.mousePosition.x - 50, this.mousePosition.y + 40);
+      const vY =  Math.round((this.mousePosition.y - this.mouseDownInitial.y) / 100, 2);
+      this.context.fillText("vX:" + vX + ', vY:' + vY, this.mousePosition.x - 50, this.mousePosition.y - 40);
     }
   }
 
